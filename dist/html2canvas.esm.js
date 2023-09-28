@@ -5761,15 +5761,15 @@ var Cache = /** @class */ (function () {
                                 //ios safari 10.3 taints canvas with data urls unless crossOrigin is set to anonymous
                                 if (isInlineBase64Image(src) || useCORS) {
                                     img.crossOrigin = 'anonymous';
+                                    // in chrome if the image loaded before without crossorigin it will be cached and used later even if the next usage has crossorigin
+                                    // so it will fail with CORS error, so add a random query parameter just to prevent the chrome from using the cached image
+                                    // see more info about the chrome issue in this link: https://stackoverflow.com/a/49503414
+                                    src = src + (src.indexOf('?') === -1 ? '?' : '&') + "cacheBusting=".concat(Math.random());
                                 }
                                 img.src = src;
                                 if (img.complete === true) {
                                     // Inline XML images may fail to parse, throwing an Error later on
                                     setTimeout(function () { return resolve(img); }, 500);
-                                    // in chrome if the image loaded before without crossorigin it will be cached and used later even if the next usage has crossorigin
-                                    // so it will fail with CORS error, so add a random query parameter just to prevent the chrome from using the cached image
-                                    // see more info about the chrome issue in this link: https://stackoverflow.com/a/49503414
-                                    src = src + (src.indexOf('?') === -1 ? '?' : '&') + "cacheBusting=".concat(Math.random());
                                 }
                                 if (_this._options.imageTimeout > 0) {
                                     setTimeout(function () { return reject("Timed out (".concat(_this._options.imageTimeout, "ms) loading image")); }, _this._options.imageTimeout);
